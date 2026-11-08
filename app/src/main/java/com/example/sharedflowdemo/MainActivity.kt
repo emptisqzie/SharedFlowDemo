@@ -17,6 +17,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.sharedflowdemo.ui.theme.SharedFlowDemoTheme
 import kotlinx.coroutines.flow.SharedFlow
 import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +51,8 @@ fun MainScreen(
         mutableStateListOf<Int>()
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+
     LazyColumn(modifier = modifier) {
         items(messages) { message ->
             Text(
@@ -59,9 +64,11 @@ fun MainScreen(
     }
 
     LaunchedEffect(key1 = Unit) {
-        sharedFlow.collect {
-            println("Collecting $it")
-            messages.add(it)
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            sharedFlow.collect {
+                println("Collecting $it")
+                messages.add(it)
+            }
         }
     }
 }
